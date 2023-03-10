@@ -1,10 +1,13 @@
 import React from "react";
+import Header from "./components/header";
+import { Route, Routes } from "react-router-dom";
 
 const App = () => {
   return (
     <>
-      <h1>Teknolojik Yemekler</h1>
-      <p>Burdaki kodu silip kendi headerınızı ekleyebilirsiniz</p>
+      <Routes>
+        <Route path="/" element={<Header />} />
+      </Routes>
     </>
   );
 };
