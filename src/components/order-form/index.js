@@ -1,8 +1,7 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
-  Col,
   Form,
   FormFeedback,
   FormGroup,
@@ -29,9 +28,12 @@ const toppings = [
   { name: "Extra Cheese", id: "extraCheese" },
 ];
 
-const OrderForm = () => {
+const OrderForm = ({ setAddedOrder }) => {
   // validasyon errorlari
   const [orderError, setOrderError] = useState({});
+
+  //is form invalid
+  const [disabled, setDisabled] = useState(true);
 
   //validasyon semasi
   const orderSchema = Yup.object().shape({
@@ -44,10 +46,26 @@ const OrderForm = () => {
   });
 
   // order objesi
-  const [order, setOrder] = useState({});
-
-  // posttan gelen cevap
-  const [addedOrder, setAddedOrder] = useState({});
+  const [order, setOrder] = useState({
+    pizzaName: "",
+    pizzaSize: "",
+    pizzaSauce: "",
+    pizzaSpecials: "",
+    pepperoni: false,
+    sausage: false,
+    canadianBacon: false,
+    spicyItalianSausage: false,
+    grilledChicken: false,
+    onions: false,
+    greenPepper: false,
+    dicedTomatos: false,
+    blackOlives: false,
+    roastedGarlic: false,
+    artichokeHearts: false,
+    threeCheese: false,
+    pinapple: false,
+    extraCheese: false,
+  });
 
   // order objesini guncelle
   const updateOrder = (evt) => {
@@ -75,152 +93,188 @@ const OrderForm = () => {
       .then((res) => setAddedOrder(res.data));
   };
 
+  const resetForm = () => {
+    setOrder({
+      pizzaName: "",
+      pizzaSize: "",
+      pizzaSauce: "",
+      pizzaSpecials: "",
+      pepperoni: false,
+      sausage: false,
+      canadianBacon: false,
+      spicyItalianSausage: false,
+      grilledChicken: false,
+      onions: false,
+      greenPepper: false,
+      dicedTomatos: false,
+      blackOlives: false,
+      roastedGarlic: false,
+      artichokeHearts: false,
+      threeCheese: false,
+      pinapple: false,
+      extraCheese: false,
+    });
+  };
+
+  // form invalid ise button disable olur
+  useEffect(() => {
+    orderSchema.isValid(order).then((valid) => {
+      setDisabled(!valid);
+    });
+  }, [order]);
+
   return (
-    <Col
-      md={{
-        offset: 3,
-        size: 6,
+    <Form
+      id="pizza-form"
+      style={{
+        backgroundColor: "#e37d71",
+        padding: "1rem",
       }}
-      sm="12"
+      onSubmit={handleSubmit}
     >
-      <Form
-        id="pizza-form"
-        style={{
-          backgroundColor: "#e37d71",
-          padding: "1rem",
-        }}
-        onSubmit={handleSubmit}
-      >
-        <h3 style={{ textAlign: "center" }}>Build Your Own Pizza</h3>
-        <img width="100%" src={pizzaImg} alt="pizza" />
-        <FormGroup>
-          <Label for="pizzaName">Name Your Pizza</Label>
-          <Input
-            required
-            type="text"
-            id="name-input"
-            name="pizzaName"
-            onChange={updateOrder}
-            invalid={Boolean(orderError.pizzaName)}
-          />
-          <FormFeedback>{orderError.pizzaName}</FormFeedback>
-        </FormGroup>
-        <FormGroup>
-          <Label for="pizzaSize">Choice of Size</Label>
-          <Input
-            required
-            onChange={updateOrder}
-            type="select"
-            name="pizzaSize"
-            invalid={Boolean(orderError.pizzaSize)}
-          >
-            <option value="">Select Size</option>
-            <option value="S">Small</option>
-            <option value="M">Medium</option>
-            <option value="L">Large</option>
-            <option value="XL">XLarge</option>
-          </Input>
-          <FormFeedback>{orderError.pizzaSize}</FormFeedback>
-        </FormGroup>
-        <FormGroup tag="fieldset">
-          <Label for="pizzaSauce">Choice of Sauce</Label>
-          <FormGroup check>
-            <Input
-              value="Original Red"
-              onChange={updateOrder}
-              name="pizzaSauce"
-              type="radio"
-              required
-            />{" "}
-            <Label check>Original Red</Label>
-          </FormGroup>
-          <FormGroup check>
-            <Input
-              value="Garlic Ranch"
-              onChange={updateOrder}
-              name="pizzaSauce"
-              type="radio"
-            />{" "}
-            <Label check>Garlic Ranch</Label>
-          </FormGroup>
-          <FormGroup check>
-            <Input
-              value="BBQ Sauce"
-              onChange={updateOrder}
-              name="pizzaSauce"
-              type="radio"
-            />{" "}
-            <Label check>BBQ Sauce</Label>
-          </FormGroup>
-          <FormGroup check>
-            <Input
-              value="Spinach Alfredo"
-              onChange={updateOrder}
-              name="pizzaSauce"
-              type="radio"
-            />{" "}
-            <Label check>Spinach Alfredo</Label>
-          </FormGroup>
-        </FormGroup>
-        <FormGroup
-          style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}
+      <h3 style={{ textAlign: "center" }}>Build Your Own Pizza</h3>
+      <img width="100%" src={pizzaImg} alt="pizza" />
+      <FormGroup>
+        <Label for="pizzaName">Name Your Pizza</Label>
+        <Input
+          required
+          type="text"
+          id="name-input"
+          name="pizzaName"
+          onChange={updateOrder}
+          invalid={Boolean(orderError.pizzaName)}
+          data-cy="name-input"
+          value={order.pizzaName}
+        />
+        <FormFeedback>{orderError.pizzaName}</FormFeedback>
+      </FormGroup>
+      <FormGroup>
+        <Label for="pizzaSize">Choice of Size</Label>
+        <Input
+          required
+          onChange={updateOrder}
+          type="select"
+          name="pizzaSize"
+          invalid={Boolean(orderError.pizzaSize)}
+          value={order.pizzaSize}
         >
-          <Label style={{ flexBasis: "100%" }}>Add Toppings</Label>
-
-          {toppings.map((topping, index) => {
-            return (
-              <Label
-                key={index}
-                style={{ flexBasis: "50%" }}
-                htmlFor={topping.id}
-              >
-                <Input
-                  type="checkbox"
-                  id={topping.id}
-                  name={topping.id}
-                  value={topping.name}
-                  onChange={updateOrder}
-                />{" "}
-                {topping.name}
-              </Label>
-            );
-          })}
-        </FormGroup>
-        <FormGroup>
-          <Label for="pizzaSpecials">Special Instructions</Label>
+          <option value="">Select Size</option>
+          <option value="S">Small</option>
+          <option value="M">Medium</option>
+          <option value="L">Large</option>
+          <option value="XL">XLarge</option>
+        </Input>
+        <FormFeedback>{orderError.pizzaSize}</FormFeedback>
+      </FormGroup>
+      <FormGroup tag="fieldset" required>
+        <Label for="pizzaSauce">Choice of Sauce</Label>
+        <FormGroup check>
           <Input
-            type="text"
-            id="specials-input"
-            name="pizzaSpecials"
-            placeholder="Anything else you'd like to add?"
+            id="Original Red"
+            value="Original Red"
             onChange={updateOrder}
-          />
+            name="pizzaSauce"
+            type="radio"
+            required
+            checked={order.pizzaSauce === "Original Red"}
+          />{" "}
+          <Label for="Original Red" check>
+            Original Red
+          </Label>
         </FormGroup>
-        <Button color="danger" id="order-button" type="submit">
-          Add to Order
-        </Button>
+        <FormGroup check>
+          <Input
+            value="Garlic Ranch"
+            id="Garlic Ranch"
+            onChange={updateOrder}
+            name="pizzaSauce"
+            type="radio"
+            checked={order.pizzaSauce === "Garlic Ranch"}
+          />{" "}
+          <Label for="Garlic Ranch" check>
+            Garlic Ranch
+          </Label>
+        </FormGroup>
+        <FormGroup check>
+          <Input
+            id="BBQ Sauce"
+            value="BBQ Sauce"
+            onChange={updateOrder}
+            name="pizzaSauce"
+            type="radio"
+            checked={order.pizzaSauce === "BBQ Sauce"}
+          />{" "}
+          <Label for="BBQ Sauce" check>
+            BBQ Sauce
+          </Label>
+        </FormGroup>
+        <FormGroup check>
+          <Input
+            id="Spinach Alfredo"
+            value="Spinach Alfredo"
+            onChange={updateOrder}
+            name="pizzaSauce"
+            type="radio"
+            checked={order.pizzaSauce === "Spinach Alfredo"}
+          />{" "}
+          <Label for="Spinach Alfredo" check>
+            Spinach Alfredo
+          </Label>
+        </FormGroup>
+      </FormGroup>
+      <FormGroup
+        style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}
+      >
+        <Label style={{ flexBasis: "100%" }}>Add Toppings</Label>
 
-        {/* Post cevabi gelince calisir */}
-        {addedOrder.id && (
-          <span>
-            Tesekkurler, siparisiniz alindi. {addedOrder.pizzaName} isimli
-            pizzaniz hazirlaniyor.
-            <p>Pizza Adi: {addedOrder.pizzaName}</p>
-            <p>Pizza Buyuklugu: {addedOrder.pizzaSize}</p>
-            <p>
-              Eklenen Malzemeler:{" "}
-              {Object.keys(addedOrder)
-                .filter((top) => addedOrder[top] === true)
-                .map((top, index) => (
-                  <span key={index}>{top}, </span>
-                ))}
-            </p>
-            <p>Notlar: {addedOrder.pizzaSpecials}</p>
-            <p>Siparis saati: {addedOrder.createdAt}</p>
-          </span>
-        )}
-      </Form>
-    </Col>
+        {toppings.map((topping, index) => {
+          return (
+            <Label
+              key={index}
+              style={{ flexBasis: "50%" }}
+              htmlFor={topping.id}
+            >
+              <Input
+                type="checkbox"
+                id={topping.id}
+                name={topping.id}
+                value={topping.name}
+                onChange={updateOrder}
+                checked={order[topping.id]}
+              />{" "}
+              {topping.name}
+            </Label>
+          );
+        })}
+      </FormGroup>
+      <FormGroup>
+        <Label for="pizzaSpecials">Special Instructions</Label>
+        <Input
+          type="text"
+          id="specials-input"
+          name="pizzaSpecials"
+          placeholder="Anything else you'd like to add?"
+          onChange={updateOrder}
+          value={order.pizzaSpecials}
+        />
+      </FormGroup>
+      <Button
+        disabled={disabled}
+        color="danger"
+        id="order-button"
+        type="submit"
+      >
+        Add to Order
+      </Button>
+      <Button
+        color="warning"
+        id="reset-button"
+        type="button"
+        onClick={resetForm}
+      >
+        Reset Order
+      </Button>
+    </Form>
   );
 };
 
